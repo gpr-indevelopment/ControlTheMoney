@@ -40,4 +40,11 @@ public class Utils {
         String debit = String.valueOf(bankReport.getDebit());
         return ANSI_BLUE + "DATE: " + ANSI_RESET + date + " - " + ANSI_BLUE + "DESCRIPTION: " + ANSI_RESET + description + " - " + ANSI_BLUE + "DEBIT: " + ANSI_RESET + debit;
     }
+
+    public static String trimDescription(String description){
+        while(description.contains("  ")){
+            description = description.replace("  ", " ");
+        }
+        return description;
+    }
 }

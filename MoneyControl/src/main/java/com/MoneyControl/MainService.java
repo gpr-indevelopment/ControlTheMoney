@@ -1,36 +1,74 @@
 package com.MoneyControl;
 
+import com.MoneyControl.SheetOutput.FixedExpenses;
+import com.MoneyControl.SheetOutput.MomCredit;
+import com.MoneyControl.SheetOutput.MomExpenses;
+import com.MoneyControl.SheetOutput.VariableExpenses;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.io.FileOutputStream;
+import java.util.*;
 
 @Service
 public class MainService {
 
+    @Autowired
+    private FixedExpenses fixedExpenses;
+
+    @Autowired
+    private MomCredit momCredit;
+
+    @Autowired
+    private MomExpenses momExpenses;
+
+    @Autowired VariableExpenses variableExpenses;
+
     private final String SEARCH_REFERENCE = "Data";
     private final String STOP_REFERENCE = "TOTAL";
     private final String SHEET_NAME = "/sample.xls";
+    private final Integer SEARCH_OFFSET_FROM_REFERENCE = 2;
+    private final Integer REFERENCE_SALARY = 2000;
 
     public void init() {
 
         HSSFSheet sheet = Utils.getSheet(SHEET_NAME);
-        HSSFCell referenceCell = findReferenceCell(sheet);
-        List<BankReport> bankReportList = fillBankReports(referenceCell, sheet);
-        routeExpenses(bankReportList);
+        Integer referenceRow = findReferenceRow(sheet);
+        List<BankReport> bankReportList = fillBankReports(referenceRow, sheet);
+        Map<String, List> expensesMap = routeExpenses(bankReportList);
+        Workbook workbook = buildWorkbook(expensesMap);
     }
 
-    public void routeExpenses(List<BankReport> bankReportsList) {
+    public Workbook buildWorkbook(Map<String, List> expensesMap){
+        Workbook workbook = new HSSFWorkbook();
+        fixedExpenses.buildFixedExpensesSheet(expensesMap, workbook);
+        momCredit.buildMomCredit(expensesMap, workbook);
+        momExpenses.buildMomExpensesSheet(expensesMap, workbook);
+        variableExpenses.buildVariableExpensesSheet(expensesMap, workbook);
+        try{
+            FileOutputStream fileOut = new FileOutputStream("finance_workbook.xls");
+            workbook.write(fileOut);
+            fileOut.close();
+        }
+        catch (Exception e){
+
+        }
+        return workbook;
+    }
+
+    public Map<String, List> routeExpenses(List<BankReport> bankReportsList) {
         Scanner scanner = new Scanner(System.in);
+        Map<String, List> expensesMap = new HashMap<>();
         List<BankReport> fixedExpenses = new ArrayList<>();
         List<BankReport> variableExpenses = new ArrayList<>();
         List<BankReport> momExpenses = new ArrayList<>();
+        List<BankReport> momCredit = new ArrayList<>();
         bankReportsList.forEach((report) -> {
             if (report.getDebit() != 0) {
                 System.out.println(Utils.formatBankReportDisplay(report));
@@ -59,19 +97,25 @@ public class MainService {
                     }
                 }
             }
+            else{
+                if(report.getCredit() > 0 && report.getCredit() < REFERENCE_SALARY) momCredit.add(report);
+            }
         });
-        System.out.println("teste");
+        expensesMap.put(FixedExpenses.FIXED_EXPENSES_KEY, fixedExpenses);
+        expensesMap.put(VariableExpenses.VARIABLE_EXPENSES_KEY, variableExpenses);
+        expensesMap.put(MomExpenses.MOM_EXPENSES_KEY, momExpenses);
+        expensesMap.put(MomCredit.MOM_CREDIT_KEY, momCredit);
+        return expensesMap;
     }
 
-    public List<BankReport> fillBankReports(HSSFCell cell, HSSFSheet sheet) {
+    public List<BankReport> fillBankReports(Integer referenceRow, HSSFSheet sheet) {
         List<BankReport> bankReportList = new ArrayList<>();
-        HSSFRow referenceRow = cell.getRow();
-        HSSFRow currentRow = sheet.getRow(referenceRow.getRowNum() + 2);
+        HSSFRow currentRow = sheet.getRow(referenceRow);
         String[] reportLine = new String[7];
         while (!currentRow.getCell(0).getStringCellValue().trim().equals(STOP_REFERENCE)) {
             Iterator cellIterator = currentRow.cellIterator();
             while (cellIterator.hasNext()) {
-                cell = (HSSFCell) cellIterator.next();
+                HSSFCell cell = (HSSFCell) cellIterator.next();
                 if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                     reportLine[cell.getColumnIndex()] = String.valueOf(cell.getNumericCellValue()).trim();
                 } else {
@@ -87,7 +131,7 @@ public class MainService {
         return bankReportList;
     }
 
-    public HSSFCell findReferenceCell(HSSFSheet sheet) {
+    public Integer findReferenceRow(HSSFSheet sheet) {
         Iterator rowIterator = sheet.rowIterator();
         HSSFRow row = null;
         HSSFCell cell = null;
@@ -101,7 +145,7 @@ public class MainService {
                     break dateFieldFindingLoop;
             }
         }
-        return cell;
+        return cell.getRow().getRowNum() + SEARCH_OFFSET_FROM_REFERENCE;
     }
 }
 

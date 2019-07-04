@@ -28,11 +28,11 @@ public class BankReport {
 
     @Getter
     @Setter
-    private double credit;
+    private Double credit;
 
     @Getter
     @Setter
-    private double debit;
+    private Double debit;
 
     @Getter
     @Setter
@@ -48,7 +48,7 @@ public class BankReport {
 
     public void setCredit(String credit) {
         if (credit.trim().isEmpty()) {
-            this.credit = 0;
+            this.credit = 0D;
         } else {
             this.credit = Double.parseDouble(credit);
         }
@@ -56,7 +56,7 @@ public class BankReport {
 
     public void setDebit(String debit) {
         if (debit.trim().isEmpty()) {
-            this.debit = 0;
+            this.debit = 0D;
         } else {
             this.debit = Double.parseDouble(debit);
         }
@@ -72,11 +72,20 @@ public class BankReport {
 
     public BankReport(String[] reportLine) {
         this.setDate(reportLine[0]);
-        this.setDescription(reportLine[1]);
+        this.setDescription(Utils.trimDescription(reportLine[1]));
         this.setDocumentNumber(reportLine[2]);
         this.setSituation(reportLine[3]);
         this.setCredit(reportLine[4]);
         this.setDebit(reportLine[5]);
         this.setBalance(reportLine[6]);
+    }
+
+    public boolean isDebit(){
+        boolean isDebit = false;
+        if(this.debit != null && this.debit != 0)
+        {
+            isDebit = true;
+        }
+        return isDebit;
     }
 }
