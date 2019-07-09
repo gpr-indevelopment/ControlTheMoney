@@ -14,8 +14,12 @@ import java.util.*;
 @Service
 public class MainService {
 
+    // TODO: Write tests, setup code to run for more than one month at a time and one more sheet for compiled data.
     @Autowired
     private SheetBuilder sheetBuilder;
+
+    @Autowired
+    private CompiledData compiledData;
 
     private final String STOP_REFERENCE = "TOTAL";
     private final String OUTPUT_SHEET_EXTENSION = ".xls";
@@ -31,7 +35,8 @@ public class MainService {
         Integer referenceRow = findReferenceRow(sheet);
         List<BankReport> bankReportList = fillBankReports(referenceRow, sheet);
         Map<String, List> expensesMap = routeExpenses(bankReportList);
-        buildWorkbook(expensesMap);
+        buildAndSaveWorkbook(expensesMap);
+
     }
 
     public Integer findReferenceRow(HSSFSheet sheet) {
@@ -41,10 +46,12 @@ public class MainService {
         dateFieldFindingLoop:
         while (rowIterator.hasNext()) {
             row = (HSSFRow) rowIterator.next();
+            boolean isSalaryRow = isSalaryRow(row);
             Iterator cellIterator = row.cellIterator();
             while (cellIterator.hasNext()) {
                 cell = (HSSFCell) cellIterator.next();
-                if (isSalaryRow(row)) {
+                if (isSalaryRow) {
+                    compiledData.setMoneyReceived(String.valueOf(row.getCell(4).getNumericCellValue()));
                     outputSheetMonth = Utils.convertDateStringToMonth(row.getCell(0).getStringCellValue());
                     break dateFieldFindingLoop;
                 }
@@ -94,15 +101,15 @@ public class MainService {
                     line = scanner.nextLine();
                 }
                 switch (line) {
-                    case ("f"): {
+                    case "f": {
                         fixedExpenses.add(report);
                         break;
                     }
-                    case ("v"): {
+                    case "v": {
                         variableExpenses.add(report);
                         break;
                     }
-                    case ("m"): {
+                    case "m": {
                         momExpenses.add(report);
                         break;
                     }
@@ -121,14 +128,16 @@ public class MainService {
         return expensesMap;
     }
 
-    public Workbook buildWorkbook(Map<String, List> expensesMap) {
+    public Workbook buildAndSaveWorkbook(Map<String, List> expensesMap) {
+        String outputFilePath = OUTPUT_SHEET_NAME + outputSheetMonth + OUTPUT_SHEET_EXTENSION;
         Workbook workbook = sheetBuilder.buildExpensesSheet(expensesMap);
+        compiledData.buildCompiledDataSpreadsheet(workbook);
         try {
-            FileOutputStream fileOut = new FileOutputStream(OUTPUT_SHEET_NAME + outputSheetMonth + OUTPUT_SHEET_EXTENSION);
+            FileOutputStream fileOut = new FileOutputStream(outputFilePath);
             workbook.write(fileOut);
             fileOut.close();
         } catch (Exception e) {
-
+            System.out.printf("An error occurred while building the output spreadsheet. Maybe a file with the same name is already open.");
         }
         return workbook;
     }

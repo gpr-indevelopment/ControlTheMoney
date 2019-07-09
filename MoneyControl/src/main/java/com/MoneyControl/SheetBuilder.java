@@ -19,7 +19,7 @@ public class SheetBuilder {
     public static final String VARIABLE_EXPENSES_KEY = "Variable Expenses";
     public static final String MOM_EXPENSES_KEY = "Mom Expenses";
     public static final String MOM_CREDIT_KEY = "Mom Credit";
-    private final String[] HEADERS = {"Date", "Description", "Debit"};
+    public static final String[] HEADERS = {"Date", "Description", "Debit"};
     private final short BORDER = CellStyle.BORDER_THIN;
 
     public Workbook buildExpensesSheet(Map<String, List> expensesMap){
@@ -27,7 +27,7 @@ public class SheetBuilder {
         expensesMap.forEach((key, bankReportList) ->{
             Sheet sheet = workbook.createSheet(key);
             createEmptyRows(sheet, bankReportList.size()+1);
-            buildAndStyleHeaders(sheet);
+            buildAndStyleHeaders(sheet, HEADERS);
             buildSheetBody(sheet, bankReportList);
             applyStylesToSheet(sheet);
         });
@@ -40,8 +40,9 @@ public class SheetBuilder {
         }
     }
 
-    private void buildAndStyleHeaders(Sheet sheet){
+    public void buildAndStyleHeaders(Sheet sheet, String[] headers){
         Row headerRow = sheet.getRow(0);
+        if(headerRow == null) headerRow = sheet.createRow(0);
         Font font = sheet.getWorkbook().createFont();
         font.setFontHeightInPoints((short) 13);
         font.setColor(HSSFColor.ROYAL_BLUE.index);
@@ -53,9 +54,9 @@ public class SheetBuilder {
         cellStyle.setBorderBottom(BORDER);
         cellStyle.setBorderLeft(BORDER);
         cellStyle.setBorderRight(BORDER);
-        for(int i=0;i<HEADERS.length;i++){
+        for(int i=0;i<headers.length;i++){
             Cell cell = headerRow.createCell(i);
-            cell.setCellValue(HEADERS[i]);
+            cell.setCellValue(headers[i]);
             cell.setCellStyle(cellStyle);
         }
     }
@@ -80,7 +81,7 @@ public class SheetBuilder {
         });
     }
 
-    private void applyStylesToSheet(Sheet sheet){
+    public void applyStylesToSheet(Sheet sheet){
         Integer columnCount = HEADERS.length;
         for(int i = 0; i < columnCount; i++) {
             sheet.autoSizeColumn(i);
