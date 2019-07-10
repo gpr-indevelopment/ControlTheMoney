@@ -1,5 +1,10 @@
 package com.MoneyControl;
 
+import com.MoneyControl.Model.BankReport;
+import com.MoneyControl.SheetBuilding.CompiledData;
+import com.MoneyControl.SheetBuilding.SheetBuilder;
+import com.MoneyControl.Utils.SheetUtils;
+import com.MoneyControl.Utils.Utils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -14,7 +19,7 @@ import java.util.*;
 @Service
 public class MainService {
 
-    // TODO: Write tests, setup code to run for more than one month at a time and one more sheet for compiled data.
+    // TODO: Write tests, setup code to run for more than one month at a time and adapt for shared expenses (between variable and mom).
     @Autowired
     private SheetBuilder sheetBuilder;
 
@@ -31,7 +36,7 @@ public class MainService {
 
     public void init() {
 
-        HSSFSheet sheet = Utils.getSheet(ORIGIN_SHEET_NAME);
+        HSSFSheet sheet = SheetUtils.getSheetFromLocalFile(ORIGIN_SHEET_NAME);
         Integer referenceRow = findReferenceRow(sheet);
         List<BankReport> bankReportList = fillBankReports(referenceRow, sheet);
         Map<String, List> expensesMap = routeExpenses(bankReportList);
@@ -51,7 +56,7 @@ public class MainService {
             while (cellIterator.hasNext()) {
                 cell = (HSSFCell) cellIterator.next();
                 if (isSalaryRow) {
-                    compiledData.setMoneyReceived(String.valueOf(row.getCell(4).getNumericCellValue()));
+                    sheetBuilder.setSalary(String.valueOf(row.getCell(4).getNumericCellValue()));
                     outputSheetMonth = Utils.convertDateStringToMonth(row.getCell(0).getStringCellValue());
                     break dateFieldFindingLoop;
                 }

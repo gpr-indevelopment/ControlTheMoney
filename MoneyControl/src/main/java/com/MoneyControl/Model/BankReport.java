@@ -1,5 +1,6 @@
-package com.MoneyControl;
+package com.MoneyControl.Model;
 
+import com.MoneyControl.Utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
 

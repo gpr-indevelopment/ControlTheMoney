@@ -1,14 +1,9 @@
-package com.MoneyControl;
+package com.MoneyControl.Utils;
 
+import com.MoneyControl.Model.BankReport;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import org.apache.poi.ss.usermodel.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -21,19 +16,6 @@ public class Utils {
     public static final String ANSI_BLUE = "\u001B[34m";
     public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public static HSSFSheet getSheet(String sheetName){
-        HSSFSheet sheet = null;
-        try {
-            String path = MoneyControlApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            InputStream input = new BufferedInputStream(new FileInputStream(path + sheetName));
-            POIFSFileSystem fileSystem = new POIFSFileSystem(input);
-            HSSFWorkbook workbook = new HSSFWorkbook(fileSystem);
-            sheet = workbook.getSheetAt(0);
-        } catch (Exception e) {
-            System.out.println("Failed to getSheet from xls.");
-        }
-        return sheet;
-    }
 
     public static String formatBankReportDisplay(BankReport bankReport){
         String date = bankReport.getDate().toString();
@@ -92,10 +74,5 @@ public class Utils {
         String monthString = String.valueOf(date.getMonthValue());
         if(monthString.length() == 1) monthString = "0" + monthString;
         return monthString;
-    }
-
-    public static String convertSheetNameToFormulaReference(String sheetName){
-        String formulaReference = "'" + sheetName + "'" + "!";
-        return  formulaReference;
     }
 }
