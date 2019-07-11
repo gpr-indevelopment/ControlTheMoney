@@ -4,6 +4,8 @@ import com.MoneyControl.Model.BankReport;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.beans.BeanUtils;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -74,5 +76,13 @@ public class Utils {
         String monthString = String.valueOf(date.getMonthValue());
         if(monthString.length() == 1) monthString = "0" + monthString;
         return monthString;
+    }
+
+    public static BankReport subtractFromDebit(BankReport report, Double value){
+        BankReport subtractedReport = report.clone();
+        Double currentDebit = report.getDebit();
+        subtractedReport.setDebit(-1*value);
+        report.setDebit(currentDebit + value);
+        return subtractedReport;
     }
 }

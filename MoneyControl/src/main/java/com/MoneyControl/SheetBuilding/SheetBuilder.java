@@ -50,7 +50,7 @@ public class SheetBuilder {
             HSSFCell dateCell = currentRow.createCell(0);
             HSSFCell descriptionCell = currentRow.createCell(1);
             HSSFCell moneyCell = currentRow.createCell(2);
-            dateCell.setCellValue(Date.valueOf(bankReport.getDate()));
+            dateCell.setCellValue(bankReport.getStringDate());
             descriptionCell.setCellValue(bankReport.getDescription());
             if(bankReport.isDebit()){
                 moneyCell.setCellValue(bankReport.getDebit());

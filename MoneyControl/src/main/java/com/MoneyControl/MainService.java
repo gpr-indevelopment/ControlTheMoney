@@ -19,7 +19,7 @@ import java.util.*;
 @Service
 public class MainService {
 
-    // TODO: Write tests, setup code to run for more than one month at a time and adapt for shared expenses (between variable and mom).
+    // TODO: Write tests, setup code to run for more than one month.
     @Autowired
     private SheetBuilder sheetBuilder;
 
@@ -99,27 +99,40 @@ public class MainService {
             if (report.getDebit() != 0) {
                 System.out.println(Utils.formatBankReportDisplay(report));
                 System.out.println("Insert: f = fixed; v = variable; m = mom.");
-                String line = scanner.nextLine();
-                while (!(line.equals("f") || line.equals("v") || line.equals("m"))) {
-                    System.out.println("Incorrect insert.");
-                    System.out.println("Insert: f = fixed; v = variable; m = mom.");
-                    line = scanner.nextLine();
-                }
-                switch (line) {
-                    case "f": {
-                        fixedExpenses.add(report);
-                        break;
+                System.out.println("Format: [branchedExpenses];[originalBranch]. branchedExpenses must be a positive number.");
+                String[] lineArray;
+                String expensesRouter;
+                Double valueToSubtract = 0d;
+                Boolean success = false;
+                while(!success){
+                    success = true;
+                    lineArray = scanner.nextLine().split(";");
+                    if(lineArray.length == 2 && lineArray[0].chars().allMatch(Character::isDigit)){
+                        valueToSubtract = Double.parseDouble(lineArray[0]);
                     }
-                    case "v": {
-                        variableExpenses.add(report);
-                        break;
-                    }
-                    case "m": {
-                        momExpenses.add(report);
-                        break;
-                    }
-                    default: {
-                        System.out.println("Unexpected error. Inserted line is not an expected type.");
+                    BankReport subtractedReport = Utils.subtractFromDebit(report, valueToSubtract);
+                    expensesRouter = lineArray[lineArray.length-1];
+                    switch (expensesRouter) {
+                        case "f": {
+                            fixedExpenses.add(report);
+                            if(subtractedReport.getDebit() < 0) momExpenses.add(subtractedReport);
+                            break;
+                        }
+                        case "v": {
+                            variableExpenses.add(report);
+                            if(subtractedReport.getDebit() < 0) momExpenses.add(subtractedReport);
+                            break;
+                        }
+                        case "m": {
+                            momExpenses.add(report);
+                            if(subtractedReport.getDebit() < 0) variableExpenses.add(subtractedReport);
+                            break;
+                        }
+                        default: {
+                            System.out.println("Unexpected error. Inserted line is not an expected type.");
+                            System.out.println("Insert: f = fixed; v = variable; m = mom.");
+                            success = false;
+                        }
                     }
                 }
             } else {
