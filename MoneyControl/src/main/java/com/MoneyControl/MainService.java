@@ -29,14 +29,16 @@ public class MainService {
     private final String STOP_REFERENCE = "TOTAL";
     private final String OUTPUT_SHEET_EXTENSION = ".xls";
     private final Integer REFERENCE_SALARY = 2000;
-    private final String ORIGIN_SHEET_NAME = "/sample.xls";
+    private final String ORIGIN_SHEET_NAME = "/report.xls";
     private final String OUTPUT_SHEET_NAME = "Finance_Workbook_";
     private final Integer SEARCH_OFFSET_FROM_REFERENCE = 1;
     private String outputSheetMonth;
 
     public void init() {
-
-        HSSFSheet sheet = SheetUtils.getSheetFromLocalFile(ORIGIN_SHEET_NAME);
+        HSSFSheet sheet = null;
+        while(sheet == null){
+            sheet = SheetUtils.getSheetFromLocalFile(ORIGIN_SHEET_NAME);
+        }
         Integer referenceRow = findReferenceRow(sheet);
         List<BankReport> bankReportList = fillBankReports(referenceRow, sheet);
         Map<String, List> expensesMap = routeExpenses(bankReportList);
@@ -147,7 +149,7 @@ public class MainService {
     }
 
     public Workbook buildAndSaveWorkbook(Map<String, List> expensesMap) {
-        String outputFilePath = OUTPUT_SHEET_NAME + outputSheetMonth + OUTPUT_SHEET_EXTENSION;
+        String outputFilePath = "./" + OUTPUT_SHEET_NAME + outputSheetMonth + OUTPUT_SHEET_EXTENSION;
         Workbook workbook = sheetBuilder.buildExpensesSheet(expensesMap);
         compiledData.buildCompiledDataSpreadsheet(workbook);
         try {

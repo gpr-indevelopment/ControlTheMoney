@@ -3,9 +3,7 @@ package com.MoneyControl.Utils;
 import com.MoneyControl.Model.BankReport;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.ss.usermodel.*;
-import org.springframework.beans.BeanUtils;
-
+import org.apache.poi.ss.usermodel.Cell;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,7 +13,7 @@ import java.util.List;
 public class Utils {
 
     public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
     public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 
@@ -23,7 +21,7 @@ public class Utils {
         String date = bankReport.getDate().toString();
         String description = bankReport.getDescription();
         String debit = String.valueOf(bankReport.getDebit());
-        return ANSI_BLUE + "DATE: " + ANSI_RESET + date + " - " + ANSI_BLUE + "DESCRIPTION: " + ANSI_RESET + description + " - " + ANSI_BLUE + "DEBIT: " + ANSI_RESET + debit;
+        return ANSI_YELLOW + "DATE: " + ANSI_RESET + date + " - " + ANSI_YELLOW + "DESCRIPTION: " + ANSI_RESET + description + " - " + ANSI_YELLOW + "DEBIT: " + ANSI_RESET + debit;
     }
 
     public static String trimDescription(String description){

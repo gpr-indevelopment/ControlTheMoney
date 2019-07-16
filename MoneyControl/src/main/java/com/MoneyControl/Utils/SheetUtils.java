@@ -1,9 +1,7 @@
 package com.MoneyControl.Utils;
 
-import com.MoneyControl.MoneyControlApplication;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
@@ -12,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Scanner;
 
 public class SheetUtils {
 
@@ -19,14 +18,16 @@ public class SheetUtils {
 
     public static HSSFSheet getSheetFromLocalFile(String fileName){
         HSSFSheet sheet = null;
+        Scanner scanner = new Scanner(System.in);
         try {
-            String path = MoneyControlApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            String path = "./";
             InputStream input = new BufferedInputStream(new FileInputStream(path + fileName));
             POIFSFileSystem fileSystem = new POIFSFileSystem(input);
             HSSFWorkbook workbook = new HSSFWorkbook(fileSystem);
             sheet = workbook.getSheetAt(0);
         } catch (Exception e) {
-            System.out.println("Failed to get sheet from xls.");
+            System.out.println("Failed to retreive report.xls sheet. Press ENTER to try again.");
+            scanner.nextLine();
         }
         return sheet;
     }
